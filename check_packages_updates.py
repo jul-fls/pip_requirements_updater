@@ -94,7 +94,7 @@ with open('requirements.txt', 'w') as f:
     for package in updated_packages:
         f.write(f"{package}\n")
         
-print("Summary:")
+print("\nSummary:")
 print(f"Automatically updated packages: {automatically_updated_packages}")
 print(f"Manually updated packages: {manually_updated_packages}")
 print(f"Automatically not updated packages: {automatically_not_updated_packages}")

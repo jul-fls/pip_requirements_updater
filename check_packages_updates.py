@@ -25,7 +25,7 @@ def get_version_and_release_date(soup):
     release_date = datetime.datetime.strptime(release_date_str, '%Y-%m-%dT%H:%M:%S%z')
     return latest_version, release_date
 
-def handle_package_update(package, version):
+def handle_package_update(package, version, pbar):
     soup = query_pypi(package)
     latest_version, latest_release_date = get_version_and_release_date(soup)
     latest_version = latest_version.split('==')[1]
@@ -37,7 +37,15 @@ def handle_package_update(package, version):
             _, previous_release_date = get_version_and_release_date(soup)
             previous_release_date_str = previous_release_date.strftime('%Y-%m-%d')
             delta = latest_release_date - previous_release_date
-            user_input = input(f"The package {package}=={latest_version} was updated on {release_date_str}, less than a week ago.\nThe currently installed version is {version} and has been released on {previous_release_date_str} ({delta.days} days ago).\nDo you want to proceed with this version? (y/n) ")
+            
+            # Clear the progress bar
+            pbar.clear(nolock=True)
+            
+            question = f"The package {package}=={latest_version} was updated on {release_date_str}, less than a week ago.\nThe currently installed version is {version} and has been released on {previous_release_date_str} ({delta.days} days ago).\nDo you want to proceed with this version? (y/n) "
+            user_input = input(question)
+
+            # Redraw the progress bar
+            pbar.refresh()
             if user_input.lower() == 'y':
                 updated_package_str = f"{package}=={latest_version} # Updated, Latest release date: {release_date_str}"
                 global manually_updated_packages
@@ -78,11 +86,12 @@ updated_packages = []
 # Parse each package's PyPi page and write the latest version to the new requirements.txt
 print("Checking for package updates...")
 today = datetime.datetime.now(pytz.UTC)  # make today offset-aware in UTC
-with tqdm(total=len(packages), desc='Updating packages', bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}') as pbar:
+with tqdm(total=len(packages), desc='Updating packages', bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}',ascii="░▒█") as pbar:
     for package, version in zip(packages, versions):
         tqdm.write(f"Updating {package}...")
-        updated_packages.append(handle_package_update(package, version))
+        updated_packages.append(handle_package_update(package, version, pbar))
         pbar.update()  # Manually update the progress bar after each iteration
+
 
 # Sort the updated packages
 updated_packages.sort()

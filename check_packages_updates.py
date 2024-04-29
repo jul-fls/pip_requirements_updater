@@ -3,7 +3,6 @@ import requests
 import datetime
 from tqdm import tqdm
 from bs4 import BeautifulSoup
-import pytz
 
 automatically_updated_packages = 0
 manually_updated_packages = 0
@@ -85,7 +84,7 @@ updated_packages = []
 
 # Parse each package's PyPi page and write the latest version to the new requirements.txt
 print("Checking for package updates...")
-today = datetime.datetime.now(pytz.UTC)  # make today offset-aware in UTC
+today = datetime.datetime.now(datetime.timezone.utc)  # make today offset-aware in UTC
 with tqdm(total=len(packages), desc='Updating packages', bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}',ascii="░▒█") as pbar:
     for package, version in zip(packages, versions):
         tqdm.write(f"Updating {package}...")
